@@ -11,6 +11,7 @@ class Item extends StatelessWidget {
   final bool withCountryNames;
   final double? leadingPadding;
   final bool trailingSpace;
+  final bool isFocus;
 
   const Item({
     Key? key,
@@ -21,6 +22,7 @@ class Item extends StatelessWidget {
     this.withCountryNames = false,
     this.leadingPadding = 12,
     this.trailingSpace = true,
+    this.isFocus = false,
   }) : super(key: key);
 
   @override
@@ -29,7 +31,9 @@ class Item extends StatelessWidget {
     if (trailingSpace) {
       dialCode = dialCode.padRight(5, "   ");
     }
-    return Container(
+    return AnimatedPadding(
+      padding: EdgeInsets.only(top: isFocus ? 17 : 0),
+      duration: const Duration(milliseconds: 200),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -40,10 +44,10 @@ class Item extends StatelessWidget {
             showFlag: showFlag,
             useEmoji: useEmoji,
           ),
-          SizedBox(width: 12.0),
+          if (showFlag ?? true) SizedBox(width: 8.0),
           Text(
             '$dialCode',
-            textDirection: TextDirection.ltr,
+            // textDirection: TextDirection.ltr,
             style: textStyle,
           ),
         ],

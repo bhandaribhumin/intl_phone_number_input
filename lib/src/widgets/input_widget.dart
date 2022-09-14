@@ -140,6 +140,7 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
   Country? country;
   List<Country> countries = [];
   bool isNotValid = true;
+  bool isFocus = false;
 
   @override
   void initState() {
@@ -147,6 +148,19 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
     loadCountries();
     controller = widget.textFieldController ?? TextEditingController();
     initialiseWidget();
+    widget.focusNode?.addListener(_onFocusChange);
+  }
+
+  @override
+  void dispose() {
+    widget.focusNode?.removeListener(_onFocusChange);
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    setState(() {
+      isFocus = widget.focusNode?.hasFocus ?? false;
+    });
   }
 
   @override
@@ -305,6 +319,8 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
         isEnabled: widget.isEnabled && !widget.isReadOnly,
         autoFocusSearchField: widget.autoFocusSearch,
         isScrollControlled: widget.countrySelectorScrollControlled,
+        isFocus:
+            isFocus || (widget.textFieldController?.text.isNotEmpty ?? false),
       ));
     }
 
@@ -412,6 +428,8 @@ class _InputWidgetView
                   isEnabled: widget.isEnabled && !widget.isReadOnly,
                   autoFocusSearchField: widget.autoFocusSearch,
                   isScrollControlled: widget.countrySelectorScrollControlled,
+                  isFocus: state.isFocus ||
+                      (state.controller?.text.isNotEmpty ?? false),
                 ),
                 SizedBox(
                   height: state.selectorButtonBottomPadding,
