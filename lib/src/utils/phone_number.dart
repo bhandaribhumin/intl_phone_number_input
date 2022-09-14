@@ -24,9 +24,6 @@ enum PhoneNumberType {
 
 /// [PhoneNumber] contains detailed information about a phone number
 class PhoneNumber extends Equatable {
-  /// National phone number
-  final String? nationalPhoneNumber;
-
   /// National dialcode of phone number
   final String? nationalDialCode;
 
@@ -47,11 +44,9 @@ class PhoneNumber extends Equatable {
   int get hash => _hash;
 
   @override
-  List<Object?> get props =>
-      [nationalPhoneNumber, nationalDialCode, phoneNumber, isoCode, dialCode];
+  List<Object?> get props => [nationalDialCode, phoneNumber, isoCode, dialCode];
 
   PhoneNumber({
-    this.nationalPhoneNumber,
     this.nationalDialCode,
     this.phoneNumber,
     this.dialCode,
@@ -59,14 +54,12 @@ class PhoneNumber extends Equatable {
   }) : _hash = 1000 + Random().nextInt(99999 - 1000);
 
   PhoneNumber copyWith({
-    nationalPhoneNumber,
     nationalDialCode,
     phoneNumber,
     dialCode,
     isoCode,
   }) {
     return PhoneNumber(
-      nationalPhoneNumber: nationalPhoneNumber ?? this.nationalPhoneNumber,
       nationalDialCode: nationalDialCode ?? this.nationalDialCode,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       dialCode: dialCode ?? this.dialCode,
@@ -76,7 +69,7 @@ class PhoneNumber extends Equatable {
 
   @override
   String toString() {
-    return 'PhoneNumber(nationalPhoneNumber: $nationalPhoneNumber, nationalDialCode: $nationalDialCode, phoneNumber: $phoneNumber, dialCode: $dialCode, isoCode: $isoCode)';
+    return 'PhoneNumber(nationalDialCode: $nationalDialCode, phoneNumber: $phoneNumber, dialCode: $dialCode, isoCode: $isoCode)';
   }
 
   /// Returns [PhoneNumber] which contains region information about
@@ -95,7 +88,6 @@ class PhoneNumber extends Equatable {
     );
 
     return PhoneNumber(
-      nationalPhoneNumber: phoneNumber,
       phoneNumber: internationalPhoneNumber,
       dialCode: regionInfo.regionPrefix,
       isoCode: regionInfo.isoCode,
@@ -143,14 +135,11 @@ class PhoneNumber extends Equatable {
       );
 
       return phoneNumber.copyWith(
-          phoneNumber: formattedNumber!.replaceAll(
-            RegExp('^([\\+]?${number.dialCode}[\\s]?)'),
-            '',
-          ),
-          nationalPhoneNumber: !formattedNationalNumber!
-                  .startsWith(phoneNumber.nationalDialCode ?? '')
-              ? '${phoneNumber.nationalDialCode}$formattedNationalNumber'
-              : formattedNationalNumber);
+        phoneNumber: formattedNumber!.replaceAll(
+          RegExp('^([\\+]?${number.dialCode}[\\s]?)'),
+          '',
+        ),
+      );
     } else {
       throw new Exception('ISO Code is "${phoneNumber.isoCode}"');
     }
