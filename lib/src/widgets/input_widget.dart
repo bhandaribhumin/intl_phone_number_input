@@ -306,7 +306,8 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
           hintText: widget.hintText,
         );
 
-    if (widget.selectorConfig.setSelectorButtonAsPrefixIcon) {
+    if (widget.selectorConfig.enable &&
+        widget.selectorConfig.setSelectorButtonAsPrefixIcon) {
       return value.copyWith(
           prefixIcon: SelectorButton(
         country: country,
@@ -413,7 +414,8 @@ class _InputWidgetView
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          if (!widget.selectorConfig.setSelectorButtonAsPrefixIcon) ...[
+          if (widget.selectorConfig.enable &&
+              !widget.selectorConfig.setSelectorButtonAsPrefixIcon) ...[
             Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
