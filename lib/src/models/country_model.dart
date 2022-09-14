@@ -15,6 +15,9 @@ class Country {
   /// The dialCode of the [Country]
   final String? dialCode;
 
+  /// The national dialCode of the [Country]
+  final String? nationalDialCode;
+
   /// The flagUri which links to the flag for the [Country] in the library assets
   final String flagUri;
 
@@ -26,6 +29,7 @@ class Country {
     required this.alpha2Code,
     required this.alpha3Code,
     required this.dialCode,
+    required this.nationalDialCode,
     required this.flagUri,
     this.nameTranslations,
   });
@@ -37,6 +41,7 @@ class Country {
       alpha2Code: data['alpha_2_code'],
       alpha3Code: data['alpha_3_code'],
       dialCode: data['dial_code'],
+      nationalDialCode: data['national_dial_code'] ?? '',
       flagUri: 'assets/flags/${data['alpha_2_code'].toLowerCase()}.png',
       nameTranslations: data['nameTranslations'] != null
           ? Map<String, String>.from(data['nameTranslations'])

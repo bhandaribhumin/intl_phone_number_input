@@ -24,6 +24,12 @@ enum PhoneNumberType {
 
 /// [PhoneNumber] contains detailed information about a phone number
 class PhoneNumber extends Equatable {
+  /// National phone number
+  final String? nationalPhoneNumber;
+
+  /// National dialcode of phone number
+  final String? nationalDialCode;
+
   /// Either formatted or unformatted String of the phone number
   final String? phoneNumber;
 
@@ -41,17 +47,36 @@ class PhoneNumber extends Equatable {
   int get hash => _hash;
 
   @override
-  List<Object?> get props => [phoneNumber, isoCode, dialCode];
+  List<Object?> get props =>
+      [nationalPhoneNumber, nationalDialCode, phoneNumber, isoCode, dialCode];
 
   PhoneNumber({
+    this.nationalPhoneNumber,
+    this.nationalDialCode,
     this.phoneNumber,
     this.dialCode,
     this.isoCode,
   }) : _hash = 1000 + Random().nextInt(99999 - 1000);
 
+  PhoneNumber copyWith({
+    nationalPhoneNumber,
+    nationalDialCode,
+    phoneNumber,
+    dialCode,
+    isoCode,
+  }) {
+    return PhoneNumber(
+      nationalPhoneNumber: nationalPhoneNumber ?? this.nationalPhoneNumber,
+      nationalDialCode: nationalDialCode ?? this.nationalDialCode,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      dialCode: dialCode ?? this.dialCode,
+      isoCode: isoCode ?? this.isoCode,
+    );
+  }
+
   @override
   String toString() {
-    return 'PhoneNumber(phoneNumber: $phoneNumber, dialCode: $dialCode, isoCode: $isoCode)';
+    return 'PhoneNumber(nationalPhoneNumber: $nationalPhoneNumber, nationalDialCode: $nationalDialCode, phoneNumber: $phoneNumber, dialCode: $dialCode, isoCode: $isoCode)';
   }
 
   /// Returns [PhoneNumber] which contains region information about
@@ -70,9 +95,11 @@ class PhoneNumber extends Equatable {
     );
 
     return PhoneNumber(
+      nationalPhoneNumber: phoneNumber,
       phoneNumber: internationalPhoneNumber,
       dialCode: regionInfo.regionPrefix,
       isoCode: regionInfo.isoCode,
+      // nationalDialCode: '',
     );
   }
 
@@ -92,6 +119,38 @@ class PhoneNumber extends Equatable {
         RegExp('^([\\+]?${number.dialCode}[\\s]?)'),
         '',
       );
+    } else {
+      throw new Exception('ISO Code is "${phoneNumber.isoCode}"');
+    }
+  }
+
+  /// Accepts a [PhoneNumber] object and returns a formatted phone number object
+  static Future<PhoneNumber> getParsablePhoneNumber(
+      PhoneNumber phoneNumber) async {
+    if (phoneNumber.isoCode != null) {
+      PhoneNumber number = await getRegionInfoFromPhoneNumber(
+        phoneNumber.phoneNumber!,
+        phoneNumber.isoCode!,
+      );
+      String? formattedNumber = await PhoneNumberUtil.formatAsYouType(
+        phoneNumber: number.phoneNumber!,
+        isoCode: number.isoCode!,
+      );
+
+      String? formattedNationalNumber = formattedNumber?.replaceAll(
+        RegExp('^([\\+]?${number.dialCode}[\\s]?)'),
+        '',
+      );
+
+      return phoneNumber.copyWith(
+          phoneNumber: formattedNumber!.replaceAll(
+            RegExp('^([\\+]?${number.dialCode}[\\s]?)'),
+            '',
+          ),
+          nationalPhoneNumber: !formattedNationalNumber!
+                  .startsWith(phoneNumber.nationalDialCode ?? '')
+              ? '${phoneNumber.nationalDialCode}$formattedNationalNumber'
+              : formattedNationalNumber);
     } else {
       throw new Exception('ISO Code is "${phoneNumber.isoCode}"');
     }
