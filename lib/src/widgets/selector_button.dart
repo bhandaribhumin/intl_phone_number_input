@@ -51,6 +51,7 @@ class SelectorButton extends StatelessWidget {
                     leadingPadding: selectorConfig.leadingPadding,
                     trailingSpace: selectorConfig.trailingSpace,
                     textStyle: selectorTextStyle,
+                    isFocus: isFocus,
                   ),
                   value: country,
                   items: mapCountryToDropdownItem(countries),
@@ -64,12 +65,13 @@ class SelectorButton extends StatelessWidget {
                 leadingPadding: selectorConfig.leadingPadding,
                 trailingSpace: selectorConfig.trailingSpace,
                 textStyle: selectorTextStyle,
+                isFocus: isFocus,
               )
         : MaterialButton(
             key: Key(TestHelper.DropdownButtonKeyValue),
             padding: EdgeInsets.zero,
             minWidth: 0,
-            onPressed: countries.isNotEmpty && countries.length > 1 && isEnabled
+            onPressed: countries.isNotEmpty && isEnabled
                 ? () async {
                     Country? selected;
                     if (selectorConfig.selectorType ==
@@ -115,6 +117,7 @@ class SelectorButton extends StatelessWidget {
           textStyle: selectorTextStyle,
           withCountryNames: false,
           trailingSpace: selectorConfig.trailingSpace,
+          isFocus: isFocus,
         ),
       );
     }).toList();

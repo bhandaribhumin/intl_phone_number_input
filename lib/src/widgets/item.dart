@@ -32,7 +32,7 @@ class Item extends StatelessWidget {
       dialCode = dialCode.padRight(5, "   ");
     }
     return AnimatedPadding(
-      padding: EdgeInsets.only(top: isFocus ? 17 : 0),
+      padding: EdgeInsets.only(top: isFocus ? 16 : 0),
       duration: const Duration(milliseconds: 200),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
