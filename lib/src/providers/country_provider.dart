@@ -25,4 +25,17 @@ class CountryProvider {
 
     return filteredList.map((country) => Country.fromJson(country)).toList();
   }
+
+  static Country? getCountryFromISOCode({String? alpha2Code}) {
+    List jsonList = Countries.countryList;
+
+      Map<String, dynamic> country = jsonList.firstWhere(
+      (country) => country[PropertyName] == alpha2Code,
+      orElse: () => Map<String, dynamic>(),
+    );
+
+    return country.isNotEmpty
+        ? Country.fromJson(country)
+        : null;
+  }
 }

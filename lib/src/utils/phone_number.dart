@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:equatable/equatable.dart';
 import 'package:intl_phone_number_input/src/models/country_list.dart';
+import 'package:intl_phone_number_input/src/providers/country_provider.dart';
 import 'package:intl_phone_number_input/src/utils/phone_number/phone_number_util.dart';
 
 /// Type of phone numbers.
@@ -87,11 +88,15 @@ class PhoneNumber extends Equatable {
       isoCode: regionInfo.isoCode ?? isoCode,
     );
 
+    var country = CountryProvider.getCountryFromISOCode(
+      alpha2Code: regionInfo.isoCode ?? isoCode,
+    );
+
     return PhoneNumber(
       phoneNumber: internationalPhoneNumber,
       dialCode: regionInfo.regionPrefix,
       isoCode: regionInfo.isoCode,
-      // nationalDialCode: '',
+      nationalDialCode: country?.nationalDialCode ?? '',
     );
   }
 
