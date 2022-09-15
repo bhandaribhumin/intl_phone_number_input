@@ -181,7 +181,7 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
   void didUpdateWidget(InternationalPhoneNumberInput oldWidget) {
     loadCountries(previouslySelectedCountry: country);
     if (oldWidget.initialValue?.hash != widget.initialValue?.hash) {
-      if (country!.alpha2Code != widget.initialValue?.isoCode) {
+      if (country?.alpha2Code != widget.initialValue?.isoCode) {
         loadCountries();
       }
       initialiseWidget();
@@ -197,13 +197,29 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
           (await PhoneNumberUtil.isValidNumber(
               phoneNumber: widget.initialValue!.phoneNumber!,
               isoCode: widget.initialValue!.isoCode!))!) {
-        String phoneNumber =
-            await PhoneNumber.getParsableNumber(widget.initialValue!);
+        var number =
+            await PhoneNumber.getParsablePhoneNumber(widget.initialValue!);
 
-        controller!.text = widget.formatInput
-            ? phoneNumber
-            : phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+        this.country =
+            CountryProvider.getCountryFromISOCode(alpha2Code: number.isoCode);
 
+        loadCountries(previouslySelectedCountry: this.country);
+
+        var phoneNumber = number.phoneNumber!;
+
+        if (widget.selectorConfig.enable) {
+          controller!.text = widget.formatInput
+              ? phoneNumber
+              : phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+        } else {
+          phoneNumber =
+              !phoneNumber.startsWith(this.country?.nationalDialCode ?? '')
+                  ? '${this.country?.nationalDialCode}$phoneNumber'
+                  : phoneNumber;
+          controller!.text = widget.formatInput
+              ? phoneNumber
+              : phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+        }
         phoneNumberControllerListener();
       }
     }
@@ -247,14 +263,17 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
       getParsedPhoneNumber(parsedPhoneNumberString, this.country?.alpha2Code)
           .then((phoneNumber) {
         if (phoneNumber == null) {
-          String phoneNumber =
-              '${this.country?.dialCode}$parsedPhoneNumberString';
+          String number = widget.selectorConfig.enable
+              ? '${this.country?.dialCode}$parsedPhoneNumberString'
+              : '${this.country?.nationalDialCode}$parsedPhoneNumberString';
 
           if (widget.onInputChanged != null) {
             widget.onInputChanged!(PhoneNumber(
-                phoneNumber: phoneNumber,
-                isoCode: this.country?.alpha2Code,
-                dialCode: this.country?.dialCode));
+              phoneNumber: number,
+              isoCode: this.country?.alpha2Code,
+              dialCode: this.country?.dialCode,
+              nationalDialCode: this.country?.nationalDialCode,
+            ));
           }
 
           if (widget.onInputValidated != null) {
@@ -262,11 +281,18 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
           }
           this.isNotValid = true;
         } else {
+          var nationalNumber = phoneNumber.replaceAll(
+              RegExp('^(\\+?\\${this.country?.dialCode})'), '');
+          var number = widget.selectorConfig.enable
+              ? phoneNumber
+              : '${this.country?.nationalDialCode}$nationalNumber';
           if (widget.onInputChanged != null) {
             widget.onInputChanged!(PhoneNumber(
-                phoneNumber: phoneNumber,
-                isoCode: this.country?.alpha2Code,
-                dialCode: this.country?.dialCode));
+              phoneNumber: number,
+              isoCode: this.country?.alpha2Code,
+              dialCode: this.country?.dialCode,
+              nationalDialCode: this.country?.nationalDialCode,
+            ));
           }
 
           if (widget.onInputValidated != null) {
@@ -320,8 +346,10 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
         isEnabled: widget.isEnabled && !widget.isReadOnly,
         autoFocusSearchField: widget.autoFocusSearch,
         isScrollControlled: widget.countrySelectorScrollControlled,
-        isFocus:
-            isFocus || (widget.textFieldController?.text.isNotEmpty ?? false),
+        isFocus: (isFocus ||
+                (widget.textFieldController?.text.isNotEmpty ?? false)) &&
+            ((decoration?.labelText?.isNotEmpty ?? false) ||
+                (decoration?.label != null)),
       ));
     }
 
@@ -363,20 +391,32 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
     phoneNumberControllerListener();
   }
 
-  void _phoneNumberSaved() {
+  void _phoneNumberSaved() async {
     if (this.mounted) {
       String parsedPhoneNumberString =
           controller!.text.replaceAll(RegExp(r'[^\d+]'), '');
 
-      String phoneNumber =
-          '${this.country?.dialCode ?? ''}' + parsedPhoneNumberString;
-
-      widget.onSaved?.call(
-        PhoneNumber(
-            phoneNumber: phoneNumber,
-            isoCode: this.country?.alpha2Code,
-            dialCode: this.country?.dialCode),
+      PhoneNumber phoneNumber = await PhoneNumber.getRegionInfoFromPhoneNumber(
+        parsedPhoneNumberString,
+        this.country?.alpha2Code ?? 'VN',
       );
+
+      var nationalNumber = phoneNumber.phoneNumber
+          ?.replaceAll(RegExp('^(\\+?\\${this.country?.dialCode})'), '');
+      var number = widget.selectorConfig.enable
+          ? phoneNumber.phoneNumber
+          : '${this.country?.nationalDialCode}$nationalNumber';
+
+      if (number?.isNotEmpty ?? false) {
+        widget.onSaved?.call(
+          PhoneNumber(
+            phoneNumber: number,
+            isoCode: this.country?.alpha2Code,
+            dialCode: this.country?.dialCode,
+            nationalDialCode: this.country?.nationalDialCode,
+          ),
+        );
+      }
     }
   }
 
@@ -430,8 +470,11 @@ class _InputWidgetView
                   isEnabled: widget.isEnabled && !widget.isReadOnly,
                   autoFocusSearchField: widget.autoFocusSearch,
                   isScrollControlled: widget.countrySelectorScrollControlled,
-                  isFocus: state.isFocus ||
-                      (state.controller?.text.isNotEmpty ?? false),
+                  isFocus: (state.isFocus ||
+                          (state.controller?.text.isNotEmpty ?? false)) &&
+                      ((widget.inputDecoration?.labelText?.isNotEmpty ??
+                              false) ||
+                          (widget.inputDecoration?.label != null)),
                 ),
                 SizedBox(
                   height: state.selectorButtonBottomPadding,

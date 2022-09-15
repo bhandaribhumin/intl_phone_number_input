@@ -134,12 +134,7 @@ class PhoneNumber extends Equatable {
         isoCode: number.isoCode!,
       );
 
-      String? formattedNationalNumber = formattedNumber?.replaceAll(
-        RegExp('^([\\+]?${number.dialCode}[\\s]?)'),
-        '',
-      );
-
-      return phoneNumber.copyWith(
+      return number.copyWith(
         phoneNumber: formattedNumber!.replaceAll(
           RegExp('^([\\+]?${number.dialCode}[\\s]?)'),
           '',
