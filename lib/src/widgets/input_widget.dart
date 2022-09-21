@@ -158,9 +158,40 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
   }
 
   void _onFocusChange() {
-    setState(() {
-      isFocus = widget.focusNode?.hasFocus ?? false;
-    });
+    isFocus = widget.focusNode?.hasFocus ?? false;
+    // if (isFocus == false) {
+    //   String parsedPhoneNumberString =
+    //       controller!.text.replaceAll(RegExp(r'[^\d+]'), '');
+
+    //   getParsedPhoneNumber(parsedPhoneNumberString, this.country?.alpha2Code)
+    //       .then((phoneNumber) async {
+    //     if (phoneNumber != null) {
+    //       var localNumber = phoneNumber.replaceAll(
+    //           RegExp('^(\\+?\\${this.country?.dialCode})'), '');
+
+    //       var nationalNumber = '${this.country?.nationalDialCode}$localNumber';
+
+    //       bool isValidNationalPhoneNumber = await PhoneNumberUtil.isValidNumber(
+    //               phoneNumber: nationalNumber,
+    //               isoCode: this.country?.alpha2Code ?? 'VN') ??
+    //           false;
+
+    //       var number =
+    //           widget.selectorConfig.enable || !isValidNationalPhoneNumber
+    //               ? localNumber
+    //               : nationalNumber;
+
+    //       String formattedNumber = await PhoneNumberUtil.formatAsYouType(
+    //             phoneNumber: number,
+    //             isoCode: this.country?.alpha2Code ?? '',
+    //           ) ??
+    //           number;
+    //       controller!.text = widget.formatInput ? formattedNumber : number;
+    //     }
+    //   });
+    // }
+
+    setState(() {});
   }
 
   @override
@@ -200,8 +231,10 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
         var number =
             await PhoneNumber.getParsablePhoneNumber(widget.initialValue!);
 
-        this.country =
-            CountryProvider.getCountryFromISOCode(alpha2Code: number.isoCode);
+        this.country = Utils.getInitialSelectedCountry(
+          countries,
+          number.isoCode ?? 'VN',
+        );
 
         loadCountries(previouslySelectedCountry: this.country);
 
@@ -261,15 +294,11 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
           controller!.text.replaceAll(RegExp(r'[^\d+]'), '');
 
       getParsedPhoneNumber(parsedPhoneNumberString, this.country?.alpha2Code)
-          .then((phoneNumber) {
+          .then((phoneNumber) async {
         if (phoneNumber == null) {
-          String number = widget.selectorConfig.enable
-              ? '${this.country?.dialCode}$parsedPhoneNumberString'
-              : '${this.country?.nationalDialCode}$parsedPhoneNumberString';
-
           if (widget.onInputChanged != null) {
             widget.onInputChanged!(PhoneNumber(
-              phoneNumber: number,
+              phoneNumber: parsedPhoneNumberString,
               isoCode: this.country?.alpha2Code,
               dialCode: this.country?.dialCode,
               nationalDialCode: this.country?.nationalDialCode,
@@ -281,11 +310,22 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
           }
           this.isNotValid = true;
         } else {
-          var nationalNumber = phoneNumber.replaceAll(
+          var localNumber = phoneNumber.replaceAll(
               RegExp('^(\\+?\\${this.country?.dialCode})'), '');
+
+          var nationalNumber = '${this.country?.nationalDialCode}$localNumber';
+
+          bool isValidNationalPhoneNumber = await PhoneNumberUtil.isValidNumber(
+                  phoneNumber: nationalNumber,
+                  isoCode: this.country?.alpha2Code ?? 'VN') ??
+              false;
+
           var number = widget.selectorConfig.enable
               ? phoneNumber
-              : '${this.country?.nationalDialCode}$nationalNumber';
+              : isValidNationalPhoneNumber
+                  ? nationalNumber
+                  : localNumber;
+
           if (widget.onInputChanged != null) {
             widget.onInputChanged!(PhoneNumber(
               phoneNumber: number,
@@ -401,11 +441,21 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
         this.country?.alpha2Code ?? 'VN',
       );
 
-      var nationalNumber = phoneNumber.phoneNumber
-          ?.replaceAll(RegExp('^(\\+?\\${this.country?.dialCode})'), '');
+      var localNumber = phoneNumber.phoneNumber!
+          .replaceAll(RegExp('^(\\+?\\${this.country?.dialCode})'), '');
+
+      var nationalNumber = '${this.country?.nationalDialCode}$localNumber';
+
+      bool isValidNationalPhoneNumber = await PhoneNumberUtil.isValidNumber(
+              phoneNumber: nationalNumber,
+              isoCode: this.country?.alpha2Code ?? 'VN') ??
+          false;
+
       var number = widget.selectorConfig.enable
           ? phoneNumber.phoneNumber
-          : '${this.country?.nationalDialCode}$nationalNumber';
+          : isValidNationalPhoneNumber
+              ? nationalNumber
+              : localNumber;
 
       if (number?.isNotEmpty ?? false) {
         widget.onSaved?.call(

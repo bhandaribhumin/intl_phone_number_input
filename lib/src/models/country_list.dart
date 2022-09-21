@@ -1427,7 +1427,7 @@ class Countries {
       "en_short_name": "Chile",
       "nationality": "Chilean",
       "dial_code": "+56",
-      "national_dial_code": "1YZ",
+      "national_dial_code": "",
       "nameTranslations": {
         "sk": "Čile",
         "se": "Čiile",
