@@ -241,6 +241,10 @@ class _InputWidgetState extends State<InternationalPhoneNumberInput> {
         var phoneNumber = number.phoneNumber!;
 
         if (widget.selectorConfig.enable) {
+          if (this.country?.dialCode != null &&
+              phoneNumber.startsWith(this.country!.dialCode!)) {
+            phoneNumber = phoneNumber.replaceFirst(this.country!.dialCode!, '');
+          }
           controller!.text = widget.formatInput
               ? phoneNumber
               : phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
