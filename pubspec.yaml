@@ -10,7 +10,11 @@ dependencies:
   flutter:
     sdk: flutter
 
-  libphonenumber_plugin: ^0.3.3
+  libphonenumber_plugin:
+    git:
+      url: https://github.com/Shahidbangash/plugin_libphonenumber.git
+      path: libphonenumber_plugin
+      ref: main
   equatable: ^2.0.5
   collection: ^1.18.0
 
